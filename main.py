@@ -1,3 +1,8 @@
+"""
+Cisco Sample Code License 1.1
+Author: flopach 2024
+"""
+
 from TalkToOpenAI import LLMOpenAI
 from TalkToOllama import LLMOllama
 from TalkToDatabase import VectorDB
@@ -13,13 +18,16 @@ import chainlit as cl
 log = logging.getLogger("applogger")
 logging.getLogger("applogger").setLevel(logging.DEBUG)
 
-# Open Source LLM: Create instance for Vector DB and LLM
-# database = VectorDB("catcenter_vectors","ollama","chromadb/")
-# LLM = LLMOllama(database=database,model="llama3")
+chosen_LLM = "openai"
 
-# OpenAI: Create instance for Vector DB and LLM
-database = VectorDB("catcenter_vectors","openai","chromadb/")
-LLM = LLMOpenAI(database=database,model="gpt-3.5-turbo")
+if chosen_LLM == "openai":
+  # OpenAI: Create instance for Vector DB and LLM
+  database = VectorDB("catcenter_vectors","openai","chromadb/")
+  LLM = LLMOpenAI(database=database,model="gpt-3.5-turbo")
+else:
+  # Open Source LLM: Create instance for Vector DB and LLM
+  database = VectorDB("catcenter_vectors","ollama","chromadb/")
+  LLM = LLMOllama(database=database,model="llama3")
 
 # Create DataHandler instance to import and embed data from local documents
 datahandler = DataHandler(database,LLM)

@@ -1,3 +1,7 @@
+"""
+Cisco Sample Code License 1.1
+Author: flopach 2024
+"""
 import json
 import glob
 import fitz

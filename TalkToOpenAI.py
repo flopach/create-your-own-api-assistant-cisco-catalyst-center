@@ -1,3 +1,7 @@
+"""
+Cisco Sample Code License 1.1
+Author: flopach 2024
+"""
 from openai import OpenAI
 import time
 import logging

@@ -1,3 +1,7 @@
+"""
+Cisco Sample Code License 1.1
+Author: flopach 2024
+"""
 import chromadb
 import os
 import logging

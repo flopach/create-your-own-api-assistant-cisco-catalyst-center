@@ -1,79 +1,137 @@
 # Understanding RAG: Create your own API Assistant
 
+This Python app helps to **understand the RAG architecture** and **generate Python code around the REST API of Cisco Catalyst Center** (formerly Cisco DNA Center). You can duplicate it for any other REST API.
 
-One Paragraph of project description goes here
+> **Learn & understand:** Nicely structured & documented code. Python libraries are kept to a minimum (no LangChain, no Llamaindex). OpenAI APIs and Open Source models are supported.
+
+> **Use it:** If you are using Catalyst Center, create your own Python code for its REST APIs. Check out the examples.
+
+## What this app does / Examples
+
+### Example 1: "get me a list of all end of sales devices. include authentication"
+
+![](images/example_eos.png)
+
+### Example 2: "export a summary of all clients"
+
+![](images/example_clients_summary.png)
+
+### Example 3: "get me a list of all devices and export this list as a spreadsheet locally. include the authentication function"
+
+![](images/example_spreadsheet.png)
+
+### Other examples
+
+* export all templates
+* run the cli command "show version" directly on every device
+* get the latest running configuration of one device
+* how to claim a device to a site
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-What things you need to install the software and how to install them
+1. Clone the code & install all required libraries:
 
 ```
-Give examples
+git clone https://github.com/flopach/create-your-own-api-assistant-cisco-catalyst-center
+cd create-your-own-api-assistant-cisco-catalyst-center
+pip install -r requirements.txt
 ```
 
-### Installing
+2. Decide which LLM to use: OpenAI or Open-Source LLM with Ollama
 
-A step by step series of examples that tell you how to get a development env running
+**OpenAI**: If not already done for, insert your OpenAI API key as stated in the [OpenAI documentation](https://platform.openai.com/docs/quickstart/step-2-set-up-your-api-key).
 
-Say what the step will be
+**Open Source LLM**: In order to run your LLM locally, install [Ollama](https://ollama.com/) and download the LLM of your choice (e.g. llama3).
 
-```
-Give the example
-```
+Open **main.py** and change the parameters if needed. Default settings are: OpenAI with the model "gpt-3.5-turbo".
 
-And repeat
+3. Run the server and start chatting at [http://localhost:8000/](http://localhost:8000/):
 
 ```
-until finished
+chainlit run main.py
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
+## Architecture & Components
 
-## Architecture
+The app follows the RAG architecture (Retrieval Augmented Generation). This is an efficient approach where relevant context data will be added to the LLM-query of the user.
 
 ![](images/architecture.png)
 
+Components overview:
+
+* **Data Layer**: data to be stored in the vector database
+	* Catalyst Center User Guide, 900 pages PDF document
+	* Catalyst Center API documentation, scraped from [developer.cisco.com/docs/dna-center/](https://developer.cisco.com/docs/dna-center/)
+	* Catalyst Center OpenAPI Specification. This documentation will be extended with newly created data by the LLM.
+* **Application Components**: 
+	* [Vector Database ChromaDB](https://www.trychroma.com/): an easy-to-use vector database with a well-documented Python SDK
+	* LLM: OpenAI GPT APIs or local Open Source LLM (e.g. llama3) with Ollama
+	* web UI for the browser conversation: [Chainlit Python library](https://chainlit.io)
+* **Python Code Structure**:
+	* **main.py** - Starting point of the app. This is where all class instances are created and the webUI via chainlit is defined.
+	* **ImportData.py** - The listed data above is being imported in the class _DataHandler_.
+	* **TalkToDatabase.py** - The database interaction (querying, embedding data) is done through the class _vectorDB_
+	* **TalkToOpenAI.py** - Used for the interactions with OpenAI's GPT via their REST APIs.
+	* **TalkToOllama.py** - Used for the interactions with Ollama.
+
+## RAG: Preparing data (ImportData.py)
+
+In a RAG architecture, you embed your own (local) data into a vector database. When the user is asking the LLM to generate data (= LLM-inferencing), some context data is also sent together with the user-query to the LLM to generate output.
+
 ![](images/preparing-data.png)
+
+3 different examples of how to import and pre-process the data:
+
+* **Import PDF document (user guide)**: Only the text of the 900 pages user guide of the Catalyst Center will be exported and based on a fixed number of characters splitted. Then, the chunks will be converted to vectors with a pre-defined embedding function and inserted into the vector database.
+* **Scraping websites (API documenation)**: Since the API documentation is located at [developer.cisco.com/docs/dna-center/](https://developer.cisco.com/docs/dna-center/), the documentation will be requested and text data will be scraped from the HTML documents. Then the text will be chunked, embedded and inserted.
+* **Generating new content based on existing data (API Specification)**: Since the API specification contains all the REST API calls, it is very important to prepare this document thoughtfully. Therefore, only the non-redundant information are getting extracted and the API query descriptions are extended with the LLM based on existing knowledge stored in the vector database. Use-cases are also included.
+
+> **Note**: Generating new data with the API specification can be time intense and is therefore optional per default. It takes approximately 1 hour with OpenAI APIs (GPT-3.5-turbo) and around 10 hours with llama3-8B on a Macbook Pro M1 (16GB RAM).
+> 
+> That's why I have already included the generated data in a JSON file _extended_apispecs_documentation.json_ located in the "/data" folder. This data is generated with GPT-3.5-turbo.
+
+## RAG: Inferencing
+
+Once the data is imported, the user can query the LLM.
 
 ![](images/inferencing.png)
 
-## Deployment
+1. User is writing the task into the chat
+2. The task (string) is vectorized and queried against the vector database. The vector database returns a specific number of documents which are semantically similar to the task.
+3. The task string and the context information is put into the prompt of the LLM.
+4. Finally, the LLM is giving the output based on the provided  data input.
 
-Add additional notes about how to deploy this on a live system
+## Next steps & FAQs
 
-## Built With
+*Q: Is this app ready for production? Is providing 100% accurate results?*
 
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
+**A:** No. This project can be useful especially when developing new applications with the Catalyst Center REST API, but the output might not be 100% correct.
 
-## Contributing
+*Q: How can the LLM generate better results?*
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+**A:** Try out other chunking methods, add other relevant data, extend the system prompt, include the response schemas from the openAPI specifications, etc. There are many ways you can tweak this app even more to generate better results!
+
+*Q: Should I use OpenAI or Ollama? What is your experience?*
+
+**A:** Try them both! You will see different performances for each LLM. I got better results with GPT-3.5.turbo compared to llama3-8B.
+
+*Q: How can I test the Python code if I don't have access to a Cisco Catalyst Center?*
+
+**A:** You can use a DevNet sandbox for free. Use the [Catalyst Center always-on sandbox](https://devnetsandbox.cisco.com/DevNet/catalog/Catalyst-Center-Always-On): Copy the URL + credentials into your script.
 
 ## Versioning
 
-**1.0** - 
+**1.0** - initial version. RAG with Catalyst Center 2.3.7
 
 ## Authors
 
-* **Florian Pachinger** - *Initial work* - [flopach](https://github.com/flopach)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+* **Flo Pachinger** - *Initial work* - [flopach](https://github.com/flopach)
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Cisco Sample Code License 1.1 - see the [LICENSE.md](LICENSE.md) file for details.
 
-## Acknowledgments
-
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+The Cisco Catalyst User Guide (PDF document) located in the "data" folder is copyright by Cisco.
 
 ## Further Links
 
