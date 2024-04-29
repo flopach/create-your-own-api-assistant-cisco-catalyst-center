@@ -41,7 +41,7 @@
 ### Other input examples
 
 * export all templates
-* run the cli command "show version" directly on every device
+* run the cli command "show version" directly on one specific device. include authentication
 * get the latest running configuration of one device
 * how to claim a device to a site
 
