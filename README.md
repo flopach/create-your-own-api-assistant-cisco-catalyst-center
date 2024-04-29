@@ -2,9 +2,9 @@
 
 This Python app helps to **understand the RAG architecture** and **generate Python code around the REST API of Cisco Catalyst Center** (formerly Cisco DNA Center). You can duplicate it for any other REST API.
 
-> **Learn & understand:** Nicely structured & documented code. Python libraries are kept to a minimum (no LangChain, no Llamaindex). OpenAI APIs and Open Source models are supported.
+**Learn & understand:** Nicely structured & documented code. Python libraries are kept to a minimum (no LangChain, no Llamaindex). OpenAI APIs and Open Source models are supported.
 
-> **Use it:** If you are using Catalyst Center, create your own Python code for its REST APIs. Check out the examples.
+**Use it:** If you are using Catalyst Center, create your own Python code for its REST APIs. Check out the examples.
 
 ## What this app does / Examples
 
@@ -29,27 +29,43 @@ This Python app helps to **understand the RAG architecture** and **generate Pyth
 
 ## Getting Started
 
-1. Clone the code & install all required libraries:
+### 1. Download & Install
+
+Clone the code & install all required libraries (recommended with [Poetry](https://pypi.org/project/poetry/)):
+
+At first install poetry on your computer:
 
 ```
-git clone https://github.com/flopach/create-your-own-api-assistant-cisco-catalyst-center
-cd create-your-own-api-assistant-cisco-catalyst-center
-pip install -r requirements.txt
+pip install poetry
 ```
 
-2. Decide which LLM to use: OpenAI or Open-Source LLM with Ollama
+Then, create all dependencies within a virtual environment (using poetry):
 
-**OpenAI**: If not already done for, insert your OpenAI API key as stated in the [OpenAI documentation](https://platform.openai.com/docs/quickstart/step-2-set-up-your-api-key).
+```
+git clone https://github.com/flopach/create-your-own-api-assistant-cisco-catalyst-center &&
+cd create-your-own-api-assistant-cisco-catalyst-center &&
+poetry install &&
+poetry shell
+```
 
-**Open Source LLM**: In order to run your LLM locally, install [Ollama](https://ollama.com/) and download the LLM of your choice (e.g. llama3).
+### 2. Decide which LLM to use
+
+Decide which LLM to use: OpenAI or Open-Source LLM with Ollama
+
+* **OpenAI**: If not already done for, insert your OpenAI API key as stated in the [OpenAI documentation](https://platform.openai.com/docs/quickstart/step-2-set-up-your-api-key).
+* **Open Source LLM**: In order to run your LLM locally, install [Ollama](https://ollama.com/) and download the LLM of your choice (e.g. llama3).
 
 Open **main.py** and change the parameters if needed. Default settings are: OpenAI with the model "gpt-3.5-turbo".
 
-3. Run the server and start chatting at [http://localhost:8000/](http://localhost:8000/):
+### 3. Run & import data
+
+Run the server and start chatting at [http://localhost:8000/](http://localhost:8000/):
 
 ```
 chainlit run main.py
 ```
+
+You should see a chat window. **If it is your first run**, type `importdata` to load, chunk and embed all data in the vector database.
 
 ## Architecture & Components
 
@@ -88,7 +104,7 @@ In a RAG architecture, you embed your own (local) data into a vector database. W
 
 > **Note**: Generating new data with the API specification can be time intense and is therefore optional per default. It takes approximately 1 hour with OpenAI APIs (GPT-3.5-turbo) and around 10 hours with llama3-8B on a Macbook Pro M1 (16GB RAM).
 > 
-> That's why I have already included the generated data in a JSON file _extended_apispecs_documentation.json_ located in the "/data" folder. This data is generated with GPT-3.5-turbo.
+> That's why I have already included the generated data in a JSON file `extended_apispecs_documentation.json` located in the `/data` folder. This data is generated with GPT-3.5-turbo.
 
 ## RAG: Inferencing
 
@@ -103,21 +119,36 @@ Once the data is imported, the user can query the LLM.
 
 ## Next steps & FAQs
 
-*Q: Is this app ready for production? Is providing 100% accurate results?*
+**Q: Is this app ready for production? Is providing 100% accurate results?**
 
-**A:** No. This project can be useful especially when developing new applications with the Catalyst Center REST API, but the output might not be 100% correct.
+No. This project can be useful especially when developing new applications with the Catalyst Center REST API, but the output might not be 100% correct.
 
-*Q: How can the LLM generate better results?*
+**Q: How can the LLM generate better results?**
 
-**A:** Try out other chunking methods, add other relevant data, extend the system prompt, include the response schemas from the openAPI specifications, etc. There are many ways you can tweak this app even more to generate better results!
+Try out other chunking methods, add other relevant data, extend the system prompt, include the response schemas from the openAPI specifications, etc. There are many ways you can tweak this app even more to generate better results!
 
-*Q: Should I use OpenAI or Ollama? What is your experience?*
+**Q: Should I use OpenAI or Ollama? What is your experience?**
 
-**A:** Try them both! You will see different performances for each LLM. I got better results with GPT-3.5.turbo compared to llama3-8B.
+Try them both! You will see different performances for each LLM. I got better results with GPT-3.5.turbo compared to llama3-8B.
 
-*Q: How can I test the Python code if I don't have access to a Cisco Catalyst Center?*
+**Q: How can I test the Python code if I don't have access to a Cisco Catalyst Center?**
 
-**A:** You can use a DevNet sandbox for free. Use the [Catalyst Center always-on sandbox](https://devnetsandbox.cisco.com/DevNet/catalog/Catalyst-Center-Always-On): Copy the URL + credentials into your script.
+You can use a DevNet sandbox for free. Use the [Catalyst Center always-on sandbox](https://devnetsandbox.cisco.com/DevNet/catalog/Catalyst-Center-Always-On): Copy the URL + credentials into your script.
+
+**Q: How can I change the bot name and auto-collapse messages?**
+
+Some chainlit settings need to be set in the configuration file which can not be changed during runtime. Therefore, only the [default parameters are used](https://docs.chainlit.io/backend/config/ui).
+
+You can change these settings in **.chainlit/config.toml**:
+
+```
+[UI]
+# Name of the app and chatbot.
+name = "Catalyst Center API+Code Assistant"
+
+# Large size content are by default collapsed for a cleaner ui
+default_collapse_content = false
+```
 
 ## Versioning
 
