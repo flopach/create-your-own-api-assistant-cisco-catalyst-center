@@ -2,6 +2,8 @@
 
 **Generate Python code around the REST API of Cisco Catalyst Center** (formerly Cisco DNA Center). You can blueprint this project for any other REST API.
 
+![](images/architecture.png)
+
 **Features**:
 
 * **Learn & understand RAG**: Nicely structured & well documented code
