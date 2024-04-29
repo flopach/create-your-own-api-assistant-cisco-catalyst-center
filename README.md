@@ -12,19 +12,31 @@
 
 ## Output Examples
 
-### Example 1: "get me a list of all end of sales devices. include authentication"
+### Example 1
+
+**User query: "get me a list of all end of sales devices. include authentication"**
 
 ![](images/example_eos.png)
 
-### Example 2: "export a summary of all clients"
+---
+
+### Example 2
+
+**User query: "export a summary of all clients"**
 
 ![](images/example_clients_summary.png)
 
-### Example 3: "get me a list of all devices and export this list as a spreadsheet locally. include the authentication function"
+---
+
+### Example 3
+
+**User query: "get me a list of all devices and export this list as a spreadsheet locally. include the authentication function"**
 
 ![](images/example_spreadsheet.png)
 
-### Other examples
+---
+
+### Other input examples
 
 * export all templates
 * run the cli command "show version" directly on every device
@@ -61,7 +73,7 @@ Decide which LLM to use: OpenAI or Open-Source LLM with Ollama
 
 Open **main.py** and change the parameters if needed. Default settings are: OpenAI with the model "gpt-3.5-turbo".
 
-### 3. Run & import data
+### 3. Start the server
 
 Run the server and start chatting at [http://localhost:8000/](http://localhost:8000/):
 
@@ -69,7 +81,13 @@ Run the server and start chatting at [http://localhost:8000/](http://localhost:8
 chainlit run main.py
 ```
 
+### 4. Import data (first run only)
+
 You should see a chat window. **If it is your first run**, type `importdata` to load, chunk and embed all data in the vector database.
+
+> **Note**: Depending on the LLM, settings and config this can take some time. You can see the current status in the terminal.
+> 
+> **Example**: Using llama3 with no full data import on a Macbook Pro M1 (16GB RAM) took around 10 minutes.
 
 ## Architecture & Components
 

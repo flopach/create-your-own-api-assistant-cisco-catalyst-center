@@ -15,7 +15,7 @@ import chainlit as cl
 
 # Select the LLM which you would like to use.
 # "openai" or "ollama". You can also define the specific model below
-setting_chosen_LLM = ""
+setting_chosen_LLM = "openai"
 
 # Do you want to extend the API specification from scratch?
 # True = Your chosen LLM will generate the existing base API documentation. This can take several hours.
@@ -42,8 +42,6 @@ else:
 # Create DataHandler instance to import and embed data from local documents
 datahandler = DataHandler(database,LLM)
 
-datahandler.import_apispecs_from_json()
-
 # ======================
 # Chainlit functions
 # docs: https://docs.chainlit.io/get-started/overview
@@ -64,22 +62,26 @@ async def main(message: cl.Message):
      message: The user's message.
   """
 
+  # trick for loader: https://docs.chainlit.io/concepts/message
+  msg = cl.Message(content="")
+  await msg.send()
+
   # if the user only types "importdata", call the import_data() function
   if message.content == "importdata":
-    response = await import_data()
+    msg.content = await import_data()
   else:
     # else, send the user_query to the LLM
-    response = await ask_llm(message.content)
+    msg.content = await ask_llm(message.content)
 
-  # Send the final answer.
-  await cl.Message(content=response).send()
+  await msg.update()
 
 @cl.step
 async def ask_llm(query_string):
   """
   Chainlit Step function: ask the LLM + return the result
   """
-  return LLM.ask_llm(query_string)
+  response = LLM.ask_llm(query_string)
+  return response
 
 @cl.step
 async def import_data():

@@ -88,7 +88,8 @@ class LLMOllama:
     ])
 
     # Calculate the total duration
-    duration = time.time() - start_time
-    log.info(f"The query '{query_string}' took {duration} seconds to execute.")
+    duration = round(time.time() - start_time, 2)
+    exec_duration = f"The query '{query_string}' took **{duration} seconds** to execute."
+    log.info(exec_duration)
 
-    return response['message']['content']
+    return response['message']['content']+"\n\n"+exec_duration
