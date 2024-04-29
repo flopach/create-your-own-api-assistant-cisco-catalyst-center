@@ -2,13 +2,25 @@
 Cisco Sample Code License 1.1
 Author: flopach 2024
 """
-
 from TalkToOpenAI import LLMOpenAI
 from TalkToOllama import LLMOllama
 from TalkToDatabase import VectorDB
 from ImportData import DataHandler
 import logging
 import chainlit as cl
+
+# ======================
+# SETTINGS
+# ======================
+
+# Select the LLM which you would like to use.
+# "openai" or "ollama". You can also define the specific model below
+setting_chosen_LLM = ""
+
+# Do you want to extend the API specification from scratch?
+# True = Your chosen LLM will generate the existing base API documentation. This can take several hours.
+# False = Use the already generated JSON file (generated with GPT-3.5-turbo)
+setting_full_import = False
 
 # ======================
 # Instance creations
@@ -18,9 +30,7 @@ import chainlit as cl
 log = logging.getLogger("applogger")
 logging.getLogger("applogger").setLevel(logging.DEBUG)
 
-chosen_LLM = "openai"
-
-if chosen_LLM == "openai":
+if setting_chosen_LLM == "openai":
   # OpenAI: Create instance for Vector DB and LLM
   database = VectorDB("catcenter_vectors","openai","chromadb/")
   LLM = LLMOpenAI(database=database,model="gpt-3.5-turbo")
@@ -31,6 +41,8 @@ else:
 
 # Create DataHandler instance to import and embed data from local documents
 datahandler = DataHandler(database,LLM)
+
+datahandler.import_apispecs_from_json()
 
 # ======================
 # Chainlit functions
@@ -52,9 +64,11 @@ async def main(message: cl.Message):
      message: The user's message.
   """
 
+  # if the user only types "importdata", call the import_data() function
   if message.content == "importdata":
     response = await import_data()
   else:
+    # else, send the user_query to the LLM
     response = await ask_llm(message.content)
 
   # Send the final answer.
@@ -63,14 +77,14 @@ async def main(message: cl.Message):
 @cl.step
 async def ask_llm(query_string):
   """
-  ask the LLM + return the result
+  Chainlit Step function: ask the LLM + return the result
   """
   return LLM.ask_llm(query_string)
 
 @cl.step
 async def import_data():
   """
-  Importing data to vectorDB
+  Chainlit Step function: Importing data to vectorDB
   """
   # Import data from API documentation  
   datahandler.scrape_apidocs_catcenter()
@@ -78,8 +92,10 @@ async def import_data():
   # Import data from Catalyst Center PDF User Guide
   datahandler.scrape_pdfuserguide_catcenter("data/b_cisco_catalyst_center_user_guide_237.pdf")
 
-  # Import API Spec Document
-  # --> Go to the function to see how the data is prepared
-  datahandler.import_api_spec("data/GA-2-3-7-swagger-v1.annotated.json")
-  
+  # Import API Specs Document
+  if setting_full_import:
+    datahandler.import_apispecs_generate_new_data("data/GA-2-3-7-swagger-v1.annotated.json")
+  else:
+    datahandler.import_apispecs_from_json()
+
   return "All data imported!"

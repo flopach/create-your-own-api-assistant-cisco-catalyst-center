@@ -62,8 +62,8 @@ class VectorDB:
     )
 
     # Display queried documents
-    log.debug(f"Queried documents: {results["metadatas"]}")
-    log.debug(f"Queried distances: {results["distances"]}")
+    log.debug(f'Queried documents: {results["metadatas"]}')
+    log.debug(f'Queried distances: {results["distances"]}')
 
     return results["documents"]
   

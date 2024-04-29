@@ -5,7 +5,6 @@ Author: flopach 2024
 import json
 import glob
 import fitz
-import tiktoken
 from bs4 import BeautifulSoup
 import requests
 import logging
@@ -15,6 +14,25 @@ class DataHandler:
     def __init__(self, database, LLM):
         self.llm = LLM
         self.database = database
+
+    def scrape_pdfuserguide_catcenter(self,filepath):
+        """
+        Scrape Catalyst Center PDF User Guide
+        """
+        try:
+            log.info(f"=== Start: Chunking + embedding PDF User Guide file ===")
+            with fitz.open(filepath) as doc:  # open document
+                content = chr(12).join([page.get_text() for page in doc])
+
+                chunks = self._chunk_text(content,512)
+
+                self.database.collection_add(
+                    documents=chunks,
+                    ids=[f"user_guide_{x}" for x in range(len(chunks))]
+                )
+            log.info(f"=== End: Chunking + embedding PDF User Guide file ===")
+        except Exception as e:
+            log.error(f"Error when reading PDF! Error: {e}")
 
     def scrape_apidocs_catcenter(self):
         """
@@ -67,33 +85,53 @@ class DataHandler:
         
         log.info(f"=== Done with api docs scraping ===")
 
-    
-    def scrape_pdfuserguide_catcenter(self,filepath):
+    def import_apispecs_from_json(self):
         """
-        Scrape Catalyst Center PDF User Guide
+        This function is used to embed the already existing EXTENDED API specification. The data was generated with GPT-3.5-turbo.
+
+        The function import_apispecs_generate_new_data() is doing the full implementation: Extend the data + embed (see below)
         """
-        try:
-            log.info(f"=== Start: Chunking + embedding PDF User Guide file ===")
-            with fitz.open(filepath) as doc:  # open document
-                content = chr(12).join([page.get_text() for page in doc])
+        # open openAPI specs file
+        with open("data/extended_apispecs_documentation.json", "r") as f:
+            dict = json.load(f)
+            log.info(f"=== Opened EXTENDED API Specification ===")
 
-                chunks = self._chunk_text(content,512)
+            total_num = len(dict["documents"])
 
+            # zipping together all 3 arrays from the JSON file + iterating
+            for i, (j_document, j_id, j_metadatas) in enumerate(zip(dict["documents"],dict["ids"],dict["metadatas"])):
+                # logging status
+                log.info(f"Working on {i} out of {total_num} ({j_id}).")
+
+                document_chunks = self._chunk_text(j_document,512)
+
+                # create for each document chunk ids. Use operationId as base id.
+                ids = [f"{j_id}_{x}" for x in range(len(document_chunks))]
+
+                # create metadata for each document chunk
+                metadatas = [j_metadatas for x in range(len(document_chunks))]
+
+                #logging chunks
+                #log.debug(document_chunks)
+
+                # === put all information into vectorDB ===
+
+                # add into vectordb
                 self.database.collection_add(
-                    documents=chunks,
-                    ids=[f"user_guide_{x}" for x in range(len(chunks))]
+                    documents=document_chunks,
+                    ids=ids,
+                    metadatas=metadatas
                 )
-            log.info(f"=== End: Chunking + embedding PDF User Guide file ===")
-        except Exception as e:
-            log.error(f"Error when reading PDF! Error: {e}")
 
-    def import_api_spec(self,filepath):
+        log.info(f"=== Chunked and embedded the openapi specification into the vectorDB ===")
+
+    def import_apispecs_generate_new_data(self,filepath):
         """
-        This function prepares the data from the API specification.
+        The existing API specification will be extended with the LLM in the function: import_apispecs_generate_new_data()
 
         1. Only specific data is extracted from the OpenAPI document
         2. Based on the information within the vectorDB (API docs, User Guide) an extended description is created via the LLM
-        3. The newly created information is saved in the vectorDB
+        3. The newly created information is saved in the vectorDB + external JSON document
 
         Args:
             filepath (str): path to file
@@ -108,13 +146,13 @@ class DataHandler:
         # open openAPI specs file
         with open(filepath, "r") as f:
             dict = json.load(f)
-            log.info(f"Opened API Specification")
+            log.info(f"=== Opened API Specification ===")
 
             p = 1
             for path in dict["paths"]:
                 """ loop through each API path in the document """
                 path_dict = dict["paths"][path]
-                log.info(f"=== STATUS: {p} out of {len(dict["paths"])} paths ===")
+                log.info(f'=== STATUS: {p} out of {len(dict["paths"])} paths ===')
                 p += 1
                 
                 for operation in path_dict:
@@ -132,12 +170,12 @@ class DataHandler:
                             p_name = parameter["name"]
                             p_description = parameter["description"]
 
-                            p_in = f"The query parameters should be used in the {parameter["in"]}. "
+                            p_in = f'The query parameters should be used in the {parameter["in"]}. '
 
                             p_default_value = ""
                             if "default" in parameter:
                                 if parameter["default"] != "":
-                                    p_default_value = f"The default value is '{parameter["default"]}'. "
+                                    p_default_value = f'The default value is "{parameter["default"]}". '
 
                             p_required = ""
                             if "required" in parameter:
