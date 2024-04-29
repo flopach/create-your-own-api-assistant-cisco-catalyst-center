@@ -1,12 +1,16 @@
 # Understanding RAG: Create your own API Assistant
 
-This Python app helps to **understand the RAG architecture** and **generate Python code around the REST API of Cisco Catalyst Center** (formerly Cisco DNA Center). You can duplicate it for any other REST API.
+**Generate Python code around the REST API of Cisco Catalyst Center** (formerly Cisco DNA Center). You can blueprint this project for any other REST API.
 
-**Learn & understand:** Nicely structured & documented code. Python libraries are kept to a minimum (no LangChain, no Llamaindex). OpenAI APIs and Open Source models are supported.
+**Features**:
 
-**Use it:** If you are using Catalyst Center, create your own Python code for its REST APIs. Check out the examples.
+* **Learn & understand RAG**: Nicely structured & well documented code
+* Python libraries are **kept to a minimum** (no LangChain, no Llamaindex)
+* **OpenAI APIs and Open Source LLMs** are supported.
+* Use it to **save time when creating new code** for Catalyst Center APIs
+* Fully functioning **full-stack application** with front- & back-end
 
-## What this app does / Examples
+## Output Examples
 
 ### Example 1: "get me a list of all end of sales devices. include authentication"
 
