@@ -75,7 +75,7 @@ poetry shell
 
 Decide which LLM to use: OpenAI or Open-Source LLM with Ollama
 
-* **OpenAI**: If not already done for, insert your OpenAI API key as stated in the [OpenAI documentation](https://platform.openai.com/docs/quickstart/step-2-set-up-your-api-key).
+* **OpenAI**: If not already done for, insert your OpenAI API key as stated in the [OpenAI documentation](https://platform.openai.com/docs/quickstart/step-2-set-up-your-api-key). Simply add your OpenAI API key in the `.env`file.
 * **Open Source LLM**: In order to run your LLM locally, install [Ollama](https://ollama.com/) and download the LLM of your choice (e.g. llama3).
 
 Open **main.py** and change the parameters if needed. Default settings are: OpenAI with the model "gpt-3.5-turbo".
