@@ -1,4 +1,4 @@
-# Understanding RAG: Create your own API Assistant
+# Create your own API Assistant with Cisco Catalyst Center
 
 **Generate Python code around the REST API of Cisco Catalyst Center** (formerly Cisco DNA Center). You can blueprint this project for any other REST API.
 
@@ -11,6 +11,11 @@
 * **OpenAI APIs and Open Source LLMs** are supported.
 * Use it to **save time when creating new code** for Catalyst Center APIs
 * Fully functioning **full-stack application** with front- & back-end
+
+**Check out the [YouTube Video](https://youtu.be/7U1LZU2jNyw)!**
+
+[![](images/youtube-thumbnail.png)](https://youtu.be/7U1LZU2jNyw)
+
 
 ## Output Examples
 
